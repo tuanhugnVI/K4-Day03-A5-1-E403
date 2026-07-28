@@ -351,18 +351,21 @@ def get_user_profile(username: str) -> str:
         - Người dùng không có trong cơ sở dữ liệu: Trả về "LỖI: Không tìm thấy hồ sơ..."
         - Tham số rỗng hoặc sai kiểu: Trả về thông báo lỗi tham số không hợp lệ.
     """
-    if not isinstance(username, str) or not username.strip():
-        return "LỖI: Tham số 'username' phải là một chuỗi văn bản hợp lệ."
+    try:
+        if not isinstance(username, str) or not str(username).strip():
+            return "LỖI: Tham số 'username' phải là một chuỗi văn bản hợp lệ."
 
-    clean_name = username.strip("'\" ")
-    if clean_name in USER_DATABASE:
-        u = USER_DATABASE[clean_name]
-        return (
-            f"Hồ sơ {clean_name}: {u['age']} tuổi, {u['gender']}, Cung: {u['zodiac']}, "
-            f"Vị trí: {u['location']}, Sở thích: {' & '.join(u['hobbies'])}, "
-            f"Lối sống: {u['lifestyle']}, Mục tiêu: Mối quan hệ {u['goal']}."
-        )
-    return f"LỖI: Không tìm thấy hồ sơ người dùng '{clean_name}' trong hệ thống."
+        clean_name = str(username).strip("'\" ")
+        if clean_name in USER_DATABASE:
+            u = USER_DATABASE[clean_name]
+            return (
+                f"Hồ sơ {clean_name}: {u['age']} tuổi, {u['gender']}, Cung: {u['zodiac']}, "
+                f"Vị trí: {u['location']}, Sở thích: {' & '.join(u['hobbies'])}, "
+                f"Lối sống: {u['lifestyle']}, Mục tiêu: Mối quan hệ {u['goal']}."
+            )
+        return f"LỖI: Không tìm thấy hồ sơ người dùng '{clean_name}' trong hệ thống."
+    except Exception as e:
+        return f"LỖI THỰC THI TOOL 'get_user_profile': {str(e)}"
 
 
 def search_partner(location: str = "", goal: str = "") -> str:
@@ -386,28 +389,31 @@ def search_partner(location: str = "", goal: str = "") -> str:
           Trả về thông báo lỗi "LỖI: Địa điểm 'Atlantis' hoặc mục tiêu 'hack NASA' không hợp lệ trong hệ thống."
         - Không tìm thấy đối tượng nào thỏa mãn: Trả về thông báo không tìm thấy đối tượng phù hợp.
     """
-    loc_lower = str(location).lower().strip("'\" ")
-    goal_lower = str(goal).lower().strip("'\" ")
-    
-    # Xử lý các câu bẫy / địa điểm hư cấu / nội dung vi phạm
-    if "atlantis" in loc_lower or "hack nasa" in goal_lower or "alien" in loc_lower:
-        return "LỖI: Không tìm thấy đối tượng nào phù hợp. Địa điểm 'Atlantis' hoặc mục tiêu 'hack NASA' không hợp lệ trong hệ thống."
+    try:
+        loc_lower = str(location or "").lower().strip("'\" ")
+        goal_lower = str(goal or "").lower().strip("'\" ")
+        
+        # Xử lý các câu bẫy / địa điểm hư cấu / nội dung vi phạm
+        if "atlantis" in loc_lower or "hack nasa" in goal_lower or "alien" in loc_lower:
+            return "LỖI: Không tìm thấy đối tượng nào phù hợp. Địa điểm 'Atlantis' hoặc mục tiêu 'hack NASA' không hợp lệ trong hệ thống."
 
-    matches = []
-    for name, profile in USER_DATABASE.items():
-        p_loc = profile["location"].lower()
-        p_goal = profile["goal"].lower()
-        
-        loc_match = not loc_lower or (loc_lower in p_loc or p_loc in loc_lower)
-        goal_match = not goal_lower or (goal_lower in p_goal or p_goal in goal_lower)
-        
-        if loc_match and goal_match and name not in ["Minh", "An"]:
-            hobbies = " & ".join(profile["hobbies"])
-            matches.append(f"({len(matches)+1}) {name} - {profile['age']} tuổi, {profile['zodiac']}, {profile['location']}, Sở thích: {hobbies}.")
+        matches = []
+        for name, profile in USER_DATABASE.items():
+            p_loc = profile.get("location", "").lower()
+            p_goal = profile.get("goal", "").lower()
             
-    if matches:
-        return f"Tìm thấy {len(matches)} ứng viên: " + "; ".join(matches)
-    return "LỖI: Không tìm thấy ứng viên nào phù hợp với tiêu chí đưa ra."
+            loc_match = not loc_lower or (loc_lower in p_loc or p_loc in loc_lower)
+            goal_match = not goal_lower or (goal_lower in p_goal or p_goal in goal_lower)
+            
+            if loc_match and goal_match and name not in ["Minh", "An"]:
+                hobbies = " & ".join(profile.get("hobbies", []))
+                matches.append(f"({len(matches)+1}) {name} - {profile.get('age', 25)} tuổi, {profile.get('zodiac', 'N/A')}, {profile.get('location', 'N/A')}, Sở thích: {hobbies}.")
+                
+        if matches:
+            return f"Tìm thấy {len(matches)} ứng viên: " + "; ".join(matches)
+        return "LỖI: Không tìm thấy ứng viên nào phù hợp với tiêu chí đưa ra."
+    except Exception as e:
+        return f"LỖI THỰC THI TOOL 'search_partner': {str(e)}"
 
 
 def calculate_compatibility(user1: str, user2: str) -> str:
@@ -429,31 +435,34 @@ def calculate_compatibility(user1: str, user2: str) -> str:
         - Một trong hai người dùng không tồn tại: Trả về "LỖI: Không thể tính điểm tương thích. Một trong hai người dùng không tồn tại..."
         - Nhập trùng user1 và user2: Trả về thông báo lỗi người dùng không thể tự so sánh với chính mình.
     """
-    u1 = str(user1).strip("'\" ")
-    u2 = str(user2).strip("'\" ")
-    
-    if not u1 or not u2:
-        return "LỖI: Vui lòng cung cấp đầy đủ tên hai người dùng để tính điểm tương thích."
+    try:
+        u1 = str(user1 or "").strip("'\" ")
+        u2 = str(user2 or "").strip("'\" ")
         
-    if u1.lower() == u2.lower():
-        return f"LỖI: Người dùng '{u1}' không thể tự tính điểm tương thích với chính mình."
+        if not u1 or not u2:
+            return "LỖI: Vui lòng cung cấp đầy đủ tên hai người dùng để tính điểm tương thích."
+            
+        if u1.lower() == u2.lower():
+            return f"LỖI: Người dùng '{u1}' không thể tự tính điểm tương thích với chính mình."
 
-    # Xử lý các cặp test case định sẵn trong benchmark
-    if u1 == "Minh" and u2 == "Lan":
-        return "Điểm tương thích Minh-Lan: 85/100. Chi tiết: Cung hoàng đạo 90%, Sở thích chung 70%, Vị trí 100%, Mục tiêu 85%."
-    elif u1 == "An" and u2 == "Bình":
-        return "Điểm tương thích An-Bình: 62/100. Chi tiết: Cung hoàng đạo 70%, Khoảng cách địa lý 30% (Yêu xa), Mục tiêu 80%."
-    elif u1 == "An" and u2 == "Chi":
-        return "Điểm tương thích An-Chi: 91/100. Chi tiết: Cung hoàng đạo 85%, Khoảng cách địa lý 100% (Cùng thành phố), Mục tiêu 90%."
-    elif u1 in USER_DATABASE and u2 in USER_DATABASE:
-        prof1 = USER_DATABASE[u1]
-        prof2 = USER_DATABASE[u2]
-        same_loc = prof1["location"] == prof2["location"]
-        loc_score = 100 if same_loc else 30
-        total = (80 + loc_score) // 2
-        return f"Điểm tương thích {u1}-{u2}: {total}/100. Chi tiết: Cung hoàng đạo 80%, Khoảng cách địa lý {loc_score}%, Mục tiêu 85%."
-    
-    return f"LỖI: Không thể tính điểm tương thích. Một trong hai người dùng ('{u1}', '{u2}') không tồn tại trong hệ thống."
+        # Xử lý các cặp test case định sẵn trong benchmark
+        if u1 == "Minh" and u2 == "Lan":
+            return "Điểm tương thích Minh-Lan: 85/100. Chi tiết: Cung hoàng đạo 90%, Sở thích chung 70%, Vị trí 100%, Mục tiêu 85%."
+        elif u1 == "An" and u2 == "Bình":
+            return "Điểm tương thích An-Bình: 62/100. Chi tiết: Cung hoàng đạo 70%, Khoảng cách địa lý 30% (Yêu xa), Mục tiêu 80%."
+        elif u1 == "An" and u2 == "Chi":
+            return "Điểm tương thích An-Chi: 91/100. Chi tiết: Cung hoàng đạo 85%, Khoảng cách địa lý 100% (Cùng thành phố), Mục tiêu 90%."
+        elif u1 in USER_DATABASE and u2 in USER_DATABASE:
+            prof1 = USER_DATABASE[u1]
+            prof2 = USER_DATABASE[u2]
+            same_loc = prof1.get("location") == prof2.get("location")
+            loc_score = 100 if same_loc else 30
+            total = (80 + loc_score) // 2
+            return f"Điểm tương thích {u1}-{u2}: {total}/100. Chi tiết: Cung hoàng đạo 80%, Khoảng cách địa lý {loc_score}%, Mục tiêu 85%."
+        
+        return f"LỖI: Không thể tính điểm tương thích. Một trong hai người dùng ('{u1}', '{u2}') không tồn tại trong hệ thống."
+    except Exception as e:
+        return f"LỖI THỰC THI TOOL 'calculate_compatibility': {str(e)}"
 
 
 # Danh sách các tool được đăng ký để Agent sử dụng
@@ -462,3 +471,4 @@ AVAILABLE_TOOLS = {
     "search_partner": search_partner,
     "calculate_compatibility": calculate_compatibility,
 }
+

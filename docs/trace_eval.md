@@ -99,21 +99,21 @@ Question: "Tôi tên Minh, 25 tuổi, Song Tử, sống ở Hà Nội, thích du
 --- 🔄 Vòng lặp ReAct (Step 1/5) ---
 🧠 Thought: Người dùng muốn tìm đối tượng phù hợp. Trước tiên cần lấy hồ sơ chi tiết của Minh.
 🛠️ Action: get_user_profile['Minh']
-👁️ Observation: Hồ sơ Minh: 25 tuổi, Nam, Cung: Song Tử, Vị trí: Hà Nội, Sở thích: Du lịch & Nấu ăn, Lối sống: Năng động, Mục tiêu: Mối quan hệ nghiêm túc.
+👁️ Observation: Hồ sơ Minh: 25 tuổi, Nam, Cung: Song Tử, Vị trí: Hà Nội, Sở thích: Du lịch & Nấu ăn, Lối sống: Năng động, Mục tiêu: Mối quan hệ Nghiêm túc.
 
 --- 🔄 Vòng lặp ReAct (Step 2/5) ---
 🧠 Thought: Đã có profile Minh. Cần tìm ứng viên phù hợp (nghiêm túc, ở Hà Nội hoặc gần đó, hợp cung).
 🛠️ Action: search_partner['Hà Nội', 'Nghiêm túc']
-👁️ Observation: Tìm thấy 2 ứng viên: (1) Lan - 24 tuổi, Bảo Bình, Hà Nội, Sở thích: Du lịch & Đọc sách; (2) Hoa - 26 tuổi, Xử Nữ, Hà Nội, Sở thích: Nấu ăn & Yoga.
+👁️ Observation: Tìm thấy 5 ứng viên: (1) Lan - 24 tuổi, Bảo Bình, Hà Nội, Sở thích: Du lịch & Đọc sách.; (2) Hoa - 26 tuổi, Xử Nữ, Hà Nội, Sở thích: Nấu ăn & Yoga.; (3) Dũng - 27 tuổi, Bạch Dương, Hà Nội, Sở thích: Gym & Chạy bộ.; (4) Hoàng - 28 tuổi, Thiên Bình, Hà Nội, Sở thích: Cầu lông & Xem phim.; (5) Kiên - 29 tuổi, Kim Ngưu, Hà Nội, Sở thích: Bóng rổ & Âm nhạc.
 
 --- 🔄 Vòng lặp ReAct (Step 3/5) ---
-🧠 Thought: Có 2 ứng viên. Cần tính compatibility score để so sánh.
+🧠 Thought: Có ứng viên phù hợp. Cần tính compatibility score để so sánh.
 🛠️ Action: calculate_compatibility['Minh', 'Lan']
 👁️ Observation: Điểm tương thích Minh-Lan: 85/100. Chi tiết: Cung hoàng đạo 90%, Sở thích chung 70%, Vị trí 100%, Mục tiêu 85%.
 
 --- 🔄 Vòng lặp ReAct (Step 4/5) ---
 🧠 Thought: Tôi đã có đủ thông tin để đưa ra lời khuyên ghép đôi cho Minh.
-🏁 Final Answer: Dựa trên hồ sơ của bạn, hệ thống tìm thấy 2 ứng viên phù hợp tại Hà Nội. Lan (24 tuổi, Bảo Bình) có điểm tương thích cao nhất: 85/100 — đặc biệt rất hợp về cung hoàng đạo (90%) và khoảng cách địa lý (100%). Gợi ý: Bạn có thể rủ Lan đi du lịch ngắn ngày để tìm hiểu thêm!
+🏁 Final Answer: Dựa trên hồ sơ của bạn, hệ thống tìm thấy các ứng viên phù hợp tại Hà Nội. Lan (24 tuổi, Bảo Bình) có điểm tương thích cao nhất: 85/100 — đặc biệt rất hợp về cung hoàng đạo (90%) và khoảng cách địa lý (100%). Gợi ý: Bạn có thể rủ Lan đi du lịch ngắn ngày để tìm hiểu thêm!
 ```
 
 ### 3.2. Test Case #4 (Multi-step — Cần gọi 2+ Tools tuần tự)
@@ -124,7 +124,7 @@ Question: "So sánh độ tương thích của tôi (An, sống ở TP.HCM) vớ
 --- 🔄 Vòng lặp ReAct (Step 1/5) ---
 🧠 Thought: Cần lấy hồ sơ của An trước để biết tiêu chí so sánh.
 🛠️ Action: get_user_profile['An']
-👁️ Observation: Hồ sơ An: 28 tuổi, Nữ, Cung: Thiên Bình, Vị trí: TP.HCM, Mục tiêu: Kết hôn.
+👁️ Observation: Hồ sơ An: 28 tuổi, Nữ, Cung: Thiên Bình, Vị trí: TP.HCM, Sở thích: Đọc sách & Cà phê, Lối sống: Nhẹ nhàng, Mục tiêu: Mối quan hệ Kết hôn.
 
 --- 🔄 Vòng lặp ReAct (Step 2/5) ---
 🧠 Thought: Có profile An. Giờ tính điểm tương thích với Bình (Đà Nẵng).
@@ -155,7 +155,7 @@ Question: "Tìm người yêu cho tôi ở thành phố Atlantis, tuổi -5, cun
 --- 🔄 Vòng lặp ReAct (Step 1/5) ---
 🧠 Thought: Cần lấy hồ sơ người dùng để tìm kiếm. Tuy nhiên tham số có vẻ bất thường.
 🛠️ Action: get_user_profile['Atlantis_user']
-👁️ Observation: LỖI: Không tìm thấy hồ sơ người dùng trong hệ thống.
+👁️ Observation: LỖI: Không tìm thấy hồ sơ người dùng 'Atlantis_user' trong hệ thống.
 
 --- 🔄 Vòng lặp ReAct (Step 2/5) ---
 🧠 Thought: Hồ sơ không tồn tại. Thử tìm kiếm đối tượng theo thành phố và mục tiêu được cung cấp.
