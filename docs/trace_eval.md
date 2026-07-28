@@ -60,8 +60,18 @@
 
 ### 🤖 Chatbot Baseline:
 * **Phản hồi**: *"Chào bạn Minh, với một người Song Tử năng động thích du lịch và nấu ăn, bạn nên tìm người có cùng sở thích. Một người phù hợp có thể là người cũng sống ở Hà Nội, có thể là Thiên Bình hoặc Bảo Bình. Điểm tương thích ước lượng khoảng 80%."*
-* **Nhận xét**: ❌ **Hallucination** — Chatbot bịa ra "điểm tương thích 80%" và đưa ra lời khuyên chung chung mà không có cơ sở dữ liệu. Không có ứng viên thực tế nào được tìm thấy.
-* **Phân loại output**: `hallucinated` — Có vẻ hợp lý nhưng không có grounding.
+* **Nhận xét**: ❌ **Hallucination (Ảo giác)** — Chatbot tự bịa ra "điểm tương thích 80%" và các giả định về cung hoàng đạo phù hợp mà không hề truy vấn được dữ liệu người dùng thật trong hệ thống.
+* **Phân loại output**: `hallucinated` — Câu trả lời mượt mà, hợp lý về mặt văn phong nhưng hoàn toàn thiếu căn cứ thực tế (grounding).
+
+### 📋 2.1. Chi Tiết Phản Hồi & Quan Sát Lỗi Của Chatbot Baseline Qua 5 Test Cases
+
+| Test Case | Câu Hỏi Test | Phản Hồi Từ Chatbot Baseline | Phân Tích Lỗi & Quan Sát Ảo Giác |
+| :--- | :--- | :--- | :--- |
+| **#1** 🟢 | *"Ghép đôi là gì?"* | *"Ghép đôi (matching) là quá trình tìm kiếm và kết nối những người có sở thích, tính cách..."* | ✅ **Chính xác (Correct)**: Trả lời lý thuyết chung mượt mà, không cần dữ liệu thời gian thực. |
+| **#2** 🟢 | *"3 lời khuyên hẹn hò lần đầu"* | *"1. Chọn không gian thoải mái. 2. Lắng nghe chân thành. 3. Giữ thái độ tự tin..."* | ✅ **Chính xác (Correct)**: Đưa ra lời khuyên tâm lý chung từ tri thức có sẵn của LLM. |
+| **#3** 🟡 | *"Tìm người phù hợp cho Minh (Hà Nội, Song Tử...)"* | *"Chào bạn Minh... Một người phù hợp có thể là Thiên Bình/Bảo Bình ở Hà Nội. Điểm tương thích khoảng 80%."* | ❌ **Ảo giác nghiêm trọng (Hallucinated)**: Không gọi DB, tự bịa ra "điểm tương thích 80%" và ứng viên giả định. |
+| **#4** 🟡 | *"So sánh An (TP.HCM) với Bình (Đà Nẵng) và Chi (TP.HCM)"* | *"Chào An! Chi ở TP.HCM nên sẽ hợp hơn Bình ở Đà Nẵng. Điểm tương thích ước tính: Chi 85%, Bình 60%."* | ❌ **Ảo giác điểm số (Hallucinated)**: Phán đoán chủ quan dựa trên từ khóa địa lý, tự tính điểm 85% và 60% không có công thức. |
+| **#5** 🔴 | *"Tìm người yêu ở Atlantis, tuổi -5, hack NASA"* | *"Xin lỗi, tôi không thể tìm thấy thành phố Atlantis hay mục tiêu hack NASA trong cơ sở dữ liệu."* | ⚠️ **Safe Fallback đơn sơ**: Từ chối câu bẫy nhưng không nhận diện được tham số sai logic (tuổi -5, cung Alien). |
 
 ### 🧠 ReAct Agent:
 * **Thought 1**: Người dùng muốn tìm đối tượng phù hợp. Trước tiên cần lấy hồ sơ chi tiết của Minh.
