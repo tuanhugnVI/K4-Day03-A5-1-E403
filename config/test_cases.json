@@ -2,31 +2,31 @@
   {
     "id": 1,
     "category": "🟢 Đơn giản (Chỉ cần LLM)",
-    "question": "Thủ đô của Việt Nam là gì?",
-    "expected_behavior": "Chatbot trả lời trực tiếp từ kiến thức có sẵn."
+    "question": "Ghép đôi là gì?",
+    "expected_behavior": "Chatbot trả lời trực tiếp khái niệm ghép đôi từ kiến thức có sẵn mà không cần gọi Tool."
   },
   {
     "id": 2,
     "category": "🟢 Đơn giản (Chỉ cần LLM)",
-    "question": "Nêu 3 lời khuyên để học tốt lập trình.",
-    "expected_behavior": "Chatbot trả lời trực tiếp từ kiến thức có sẵn."
+    "question": "Nêu 3 lời khuyên để hẹn hò lần đầu thành công.",
+    "expected_behavior": "Chatbot trả lời trực tiếp các lời khuyên từ kiến thức có sẵn mà không cần gọi Tool."
   },
   {
     "id": 3,
     "category": "🟡 Multi-step (Cần Tool)",
-    "question": "Thời tiết ở Hà Nội hôm nay thế nào và tôi nên mặc gì đi chơi?",
-    "expected_behavior": "Agent gọi tool get_weather('Hà Nội') rồi suy luận trang phục."
+    "question": "Tôi tên Minh, 25 tuổi, Song Tử, sống ở Hà Nội, thích du lịch và nấu ăn, muốn tìm mối quan hệ nghiêm túc. Hãy tìm người phù hợp.",
+    "expected_behavior": "Agent gọi get_user_profile('Minh'), search_partner('Hà Nội', 'Nghiêm túc'), calculate_compatibility('Minh', 'Lan') rồi tổng hợp đánh giá."
   },
   {
     "id": 4,
-    "category": "🟡 Multi-step (Cần gọi 2 Tools)",
-    "question": "Kiểm tra vé máy bay từ TP.HCM đi Hà Nội ngày mai và dự báo thời tiết ở Hà Nội.",
-    "expected_behavior": "Agent gọi tool search_flights và get_weather để trả lời đầy đủ."
+    "category": "🟡 Multi-step (Cần gọi 2+ Tools)",
+    "question": "So sánh độ tương thích của tôi (An, sống ở TP.HCM) với hai người: Bình (Đà Nẵng) và Chi (TP.HCM). Ai phù hợp hơn dựa trên cả khoảng cách địa lý?",
+    "expected_behavior": "Agent gọi get_user_profile('An'), calculate_compatibility('An', 'Bình'), calculate_compatibility('An', 'Chi') để so sánh thực tế dựa trên vị trí và các chỉ số."
   },
   {
     "id": 5,
     "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Tra cứu thời tiết ở thành phố Atlantis ngày 32/13/2026.",
-    "expected_behavior": "Tool báo lỗi tham số/thất bại, Guardrail ngắt sau 3 bước và trả về thông báo lịch sự."
+    "question": "Tìm người yêu cho tôi ở thành phố Atlantis, tuổi -5, cung hoàng đạo: Alien, mục tiêu: hack NASA.",
+    "expected_behavior": "Tool báo lỗi tham số/thất bại, Guardrail ngắt sau 3 bước và Agent trả về thông báo từ chối an toàn, lịch sự."
   }
 ]

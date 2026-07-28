@@ -137,19 +137,19 @@ class MockProvider(BaseLLMProvider):
         text = prompt.lower()
         is_chatbot = "baseline" in system_prompt.lower() or "thông thường" in system_prompt.lower()
         
-
+        # Test Case 1: "Ghép đôi là gì?"
         if "ghép đôi là gì" in text:
             if is_chatbot:
                 return "Ghép đôi (matching) là quá trình tìm kiếm và kết nối những người có sở thích, tính cách, quan điểm sống hoặc tiêu chí phù hợp với nhau để tạo lập mối quan hệ."
             return "Thought: Đây là câu hỏi lý thuyết đơn giản, không cần sử dụng tool.\nFinal Answer: Ghép đôi (matching) là quá trình phân tích thông tin cá nhân (sở thích, tính cách, vị trí địa lý, mục tiêu mối quan hệ) để kết nối những người có mức độ tương thích cao với nhau."
 
-
+        # Test Case 2: "3 lời khuyên hẹn hò"
         if "lời khuyên" in text and "hẹn hò" in text:
             if is_chatbot:
                 return "3 lời khuyên khi đi hẹn hò lần đầu:\n1. Chọn không gian thoải mái, dễ nói chuyện.\n2. Lắng nghe chân thành và tôn trọng đối phương.\n3. Giữ thái độ tự tin, tự nhiên và là chính mình."
             return "Thought: Đây là câu hỏi tư vấn chung, không cần truy cứu database hay gọi tool.\nFinal Answer: 3 lời khuyên giúp buổi hẹn hò đầu tiên thành công:\n1. **Chuẩn bị tâm lý tự tin & thoải mái**: Chọn trang phục lịch sự và địa điểm phù hợp.\n2. **Lắng nghe tích cực**: Chủ động đặt câu hỏi mở và chia sẻ chân thành.\n3. **Giữ sự lịch sự & đúng giờ**: Thể hiện sự tôn trọng thời gian của đối phương."
 
-
+        # Test Case 3: "Minh"
         if "minh" in text:
             if is_chatbot:
                 return "Chào bạn Minh, với một người Song Tử năng động thích du lịch và nấu ăn, bạn nên tìm người có cùng sở thích. Một người phù hợp có thể là người cũng sống ở Hà Nội, có thể là Thiên Bình hoặc Bảo Bình. Điểm tương thích ước lượng khoảng 80%."
@@ -163,7 +163,7 @@ class MockProvider(BaseLLMProvider):
                 elif "điểm tương thích minh-lan" in text:
                     return "Thought: Tôi đã có đủ thông tin để đưa ra lời khuyên ghép đôi cho Minh.\nFinal Answer: Dựa trên hồ sơ của bạn, hệ thống tìm thấy các ứng viên phù hợp tại Hà Nội. Lan (24 tuổi, Bảo Bình) có điểm tương thích cao nhất: 85/100 — đặc biệt rất hợp về cung hoàng đạo (90%) và khoảng cách địa lý (100%). Gợi ý: Bạn có thể rủ Lan đi du lịch ngắn ngày để tìm hiểu thêm!"
 
-
+        # Test Case 4: "An", "Bình", "Chi"
         if "an" in text and ("bình" in text or "chi" in text):
             if is_chatbot:
                 return "Chào An! Dựa trên thông tin của bạn (ở TP.HCM), Chi cũng ở TP.HCM nên sẽ hợp hơn Bình (ở Đà Nẵng) do không bị trở ngại yêu xa. Điểm tương thích ước tính: Chi 85%, Bình 60%."

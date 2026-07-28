@@ -34,6 +34,24 @@
 | **Cá nhân hóa lời khuyên** | ⚠️ Lời khuyên chung chung | ✅ Dựa trên dữ liệu thật từ profile & score |
 | **Xử lý edge case (thiếu thông tin)** | ❌ Vẫn bịa câu trả lời | ✅ Nhận diện lỗi → yêu cầu bổ sung |
 
+### 1.4. Danh sách các công cụ trong `src/tools.py` (Dành cho Role 2)
+
+| Tên Công Cụ (Tool Name) | Mô Tả Chức Năng | Đầu Vào (Arguments) | Đầu Ra (Returns) |
+| :--- | :--- | :--- | :--- |
+| 🛠️ `get_user_profile` | Tra cứu hồ sơ cá nhân chi tiết của người dùng theo tên | `username: str` | Thông tin tuổi, giới tính, cung hoàng đạo, vị trí, sở thích, lối sống, mục tiêu |
+| 🛠️ `search_partner` | Tìm kiếm đối tượng phù hợp từ cơ sở dữ liệu theo địa điểm & mục tiêu | `location: str`, `goal: str` | Danh sách ứng viên phù hợp hoặc thông báo không tìm thấy |
+| 🛠️ `calculate_compatibility` | Tính toán điểm tương thích đa tiêu chí giữa 2 người dùng | `user1: str`, `user2: str` | Điểm số tương thích (0-100) và chi tiết phân tích từng tiêu chí |
+
+### 1.5. Các trường hợp Tool bị lỗi — Failure Modes & Guardrails (Dành cho Role 3)
+
+| Mã Lỗi (Failure Mode) | Nguyên Nhân Lỗi | Biểu Hiện (Tool Response) | Xử Lý Phanh An Toàn (Guardrail Action) |
+| :--- | :--- | :--- | :--- |
+| **FM-01: Invalid User** | Người dùng không tồn tại trong DB | `LỖI: Không tìm thấy hồ sơ người dùng trong hệ thống.` | Agent nhận diện lỗi từ Observation, dừng tra cứu và thông báo cho người dùng. |
+| **FM-02: Invalid Location** | Nhập thành phố hư cấu (ví dụ: *Atlantis*) | `LỖI: Địa điểm 'Atlantis' không hợp lệ trong hệ thống.` | Agent không bịa kết quả, chuyển sang Safe Fallback báo địa điểm không hợp lệ. |
+| **FM-03: Invalid Parameter** | Tham số tuổi âm (-5) hoặc cung vô lý (*Alien*) | `LỖI: Tham số đầu vào không đúng định dạng.` | Agent phát hiện thông tin vô lý từ Thought/Observation và yêu cầu sửa thông tin. |
+| **FM-04: Unsafe Content** | Mục tiêu vi phạm quy chuẩn an toàn (*hack NASA*) | `LỖI: Mục tiêu không hợp lệ trong hệ thống.` | Tool từ chối thực thi, Agent ngắt luồng suy luận an toàn tại Step 3/5. |
+| **FM-05: Infinite Loop** | Agent lặp lại việc gọi tool khi không tìm thấy ứng viên | Lặp quá giới hạn cho phép | **`MAX_ITERATIONS = 5`** chủ động ngắt lặp an toàn, tránh treo ứng dụng. |
+
 ---
 
 ## 🔍 2. SO SÁNH PHẢN HỒI (TEST CASE #3)
@@ -42,8 +60,18 @@
 
 ### 🤖 Chatbot Baseline:
 * **Phản hồi**: *"Chào bạn Minh, với một người Song Tử năng động thích du lịch và nấu ăn, bạn nên tìm người có cùng sở thích. Một người phù hợp có thể là người cũng sống ở Hà Nội, có thể là Thiên Bình hoặc Bảo Bình. Điểm tương thích ước lượng khoảng 80%."*
-* **Nhận xét**: ❌ **Hallucination** — Chatbot bịa ra "điểm tương thích 80%" và đưa ra lời khuyên chung chung mà không có cơ sở dữ liệu. Không có ứng viên thực tế nào được tìm thấy.
-* **Phân loại output**: `hallucinated` — Có vẻ hợp lý nhưng không có grounding.
+* **Nhận xét**: ❌ **Hallucination (Ảo giác)** — Chatbot tự bịa ra "điểm tương thích 80%" và các giả định về cung hoàng đạo phù hợp mà không hề truy vấn được dữ liệu người dùng thật trong hệ thống.
+* **Phân loại output**: `hallucinated` — Câu trả lời mượt mà, hợp lý về mặt văn phong nhưng hoàn toàn thiếu căn cứ thực tế (grounding).
+
+### 📋 2.1. Chi Tiết Phản Hồi & Quan Sát Lỗi Của Chatbot Baseline Qua 5 Test Cases
+
+| Test Case | Câu Hỏi Test | Phản Hồi Từ Chatbot Baseline | Phân Tích Lỗi & Quan Sát Ảo Giác |
+| :--- | :--- | :--- | :--- |
+| **#1** 🟢 | *"Ghép đôi là gì?"* | *"Ghép đôi (matching) là quá trình tìm kiếm và kết nối những người có sở thích, tính cách..."* | ✅ **Chính xác (Correct)**: Trả lời lý thuyết chung mượt mà, không cần dữ liệu thời gian thực. |
+| **#2** 🟢 | *"3 lời khuyên hẹn hò lần đầu"* | *"1. Chọn không gian thoải mái. 2. Lắng nghe chân thành. 3. Giữ thái độ tự tin..."* | ✅ **Chính xác (Correct)**: Đưa ra lời khuyên tâm lý chung từ tri thức có sẵn của LLM. |
+| **#3** 🟡 | *"Tìm người phù hợp cho Minh (Hà Nội, Song Tử...)"* | *"Chào bạn Minh... Một người phù hợp có thể là Thiên Bình/Bảo Bình ở Hà Nội. Điểm tương thích khoảng 80%."* | ❌ **Ảo giác nghiêm trọng (Hallucinated)**: Không gọi DB, tự bịa ra "điểm tương thích 80%" và ứng viên giả định. |
+| **#4** 🟡 | *"So sánh An (TP.HCM) với Bình (Đà Nẵng) và Chi (TP.HCM)"* | *"Chào An! Chi ở TP.HCM nên sẽ hợp hơn Bình ở Đà Nẵng. Điểm tương thích ước tính: Chi 85%, Bình 60%."* | ❌ **Ảo giác điểm số (Hallucinated)**: Phán đoán chủ quan dựa trên từ khóa địa lý, tự tính điểm 85% và 60% không có công thức. |
+| **#5** 🔴 | *"Tìm người yêu ở Atlantis, tuổi -5, hack NASA"* | *"Xin lỗi, tôi không thể tìm thấy thành phố Atlantis hay mục tiêu hack NASA trong cơ sở dữ liệu."* | ⚠️ **Safe Fallback đơn sơ**: Từ chối câu bẫy nhưng không nhận diện được tham số sai logic (tuổi -5, cung Alien). |
 
 ### 🧠 ReAct Agent:
 * **Thought 1**: Người dùng muốn tìm đối tượng phù hợp. Trước tiên cần lấy hồ sơ chi tiết của Minh.
@@ -71,21 +99,21 @@ Question: "Tôi tên Minh, 25 tuổi, Song Tử, sống ở Hà Nội, thích du
 --- 🔄 Vòng lặp ReAct (Step 1/5) ---
 🧠 Thought: Người dùng muốn tìm đối tượng phù hợp. Trước tiên cần lấy hồ sơ chi tiết của Minh.
 🛠️ Action: get_user_profile['Minh']
-👁️ Observation: Hồ sơ Minh: 25 tuổi, Nam, Cung: Song Tử, Vị trí: Hà Nội, Sở thích: Du lịch & Nấu ăn, Lối sống: Năng động, Mục tiêu: Mối quan hệ nghiêm túc.
+👁️ Observation: Hồ sơ Minh: 25 tuổi, Nam, Cung: Song Tử, Vị trí: Hà Nội, Sở thích: Du lịch & Nấu ăn, Lối sống: Năng động, Mục tiêu: Mối quan hệ Nghiêm túc.
 
 --- 🔄 Vòng lặp ReAct (Step 2/5) ---
 🧠 Thought: Đã có profile Minh. Cần tìm ứng viên phù hợp (nghiêm túc, ở Hà Nội hoặc gần đó, hợp cung).
 🛠️ Action: search_partner['Hà Nội', 'Nghiêm túc']
-👁️ Observation: Tìm thấy 2 ứng viên: (1) Lan - 24 tuổi, Bảo Bình, Hà Nội, Sở thích: Du lịch & Đọc sách; (2) Hoa - 26 tuổi, Xử Nữ, Hà Nội, Sở thích: Nấu ăn & Yoga.
+👁️ Observation: Tìm thấy 5 ứng viên: (1) Lan - 24 tuổi, Bảo Bình, Hà Nội, Sở thích: Du lịch & Đọc sách.; (2) Hoa - 26 tuổi, Xử Nữ, Hà Nội, Sở thích: Nấu ăn & Yoga.; (3) Dũng - 27 tuổi, Bạch Dương, Hà Nội, Sở thích: Gym & Chạy bộ.; (4) Hoàng - 28 tuổi, Thiên Bình, Hà Nội, Sở thích: Cầu lông & Xem phim.; (5) Kiên - 29 tuổi, Kim Ngưu, Hà Nội, Sở thích: Bóng rổ & Âm nhạc.
 
 --- 🔄 Vòng lặp ReAct (Step 3/5) ---
-🧠 Thought: Có 2 ứng viên. Cần tính compatibility score để so sánh.
+🧠 Thought: Có ứng viên phù hợp. Cần tính compatibility score để so sánh.
 🛠️ Action: calculate_compatibility['Minh', 'Lan']
 👁️ Observation: Điểm tương thích Minh-Lan: 85/100. Chi tiết: Cung hoàng đạo 90%, Sở thích chung 70%, Vị trí 100%, Mục tiêu 85%.
 
 --- 🔄 Vòng lặp ReAct (Step 4/5) ---
 🧠 Thought: Tôi đã có đủ thông tin để đưa ra lời khuyên ghép đôi cho Minh.
-🏁 Final Answer: Dựa trên hồ sơ của bạn, hệ thống tìm thấy 2 ứng viên phù hợp tại Hà Nội. Lan (24 tuổi, Bảo Bình) có điểm tương thích cao nhất: 85/100 — đặc biệt rất hợp về cung hoàng đạo (90%) và khoảng cách địa lý (100%). Gợi ý: Bạn có thể rủ Lan đi du lịch ngắn ngày để tìm hiểu thêm!
+🏁 Final Answer: Dựa trên hồ sơ của bạn, hệ thống tìm thấy các ứng viên phù hợp tại Hà Nội. Lan (24 tuổi, Bảo Bình) có điểm tương thích cao nhất: 85/100 — đặc biệt rất hợp về cung hoàng đạo (90%) và khoảng cách địa lý (100%). Gợi ý: Bạn có thể rủ Lan đi du lịch ngắn ngày để tìm hiểu thêm!
 ```
 
 ### 3.2. Test Case #4 (Multi-step — Cần gọi 2+ Tools tuần tự)
@@ -96,7 +124,7 @@ Question: "So sánh độ tương thích của tôi (An, sống ở TP.HCM) vớ
 --- 🔄 Vòng lặp ReAct (Step 1/5) ---
 🧠 Thought: Cần lấy hồ sơ của An trước để biết tiêu chí so sánh.
 🛠️ Action: get_user_profile['An']
-👁️ Observation: Hồ sơ An: 28 tuổi, Nữ, Cung: Thiên Bình, Vị trí: TP.HCM, Mục tiêu: Kết hôn.
+👁️ Observation: Hồ sơ An: 28 tuổi, Nữ, Cung: Thiên Bình, Vị trí: TP.HCM, Sở thích: Đọc sách & Cà phê, Lối sống: Nhẹ nhàng, Mục tiêu: Mối quan hệ Kết hôn.
 
 --- 🔄 Vòng lặp ReAct (Step 2/5) ---
 🧠 Thought: Có profile An. Giờ tính điểm tương thích với Bình (Đà Nẵng).
@@ -127,7 +155,7 @@ Question: "Tìm người yêu cho tôi ở thành phố Atlantis, tuổi -5, cun
 --- 🔄 Vòng lặp ReAct (Step 1/5) ---
 🧠 Thought: Cần lấy hồ sơ người dùng để tìm kiếm. Tuy nhiên tham số có vẻ bất thường.
 🛠️ Action: get_user_profile['Atlantis_user']
-👁️ Observation: LỖI: Không tìm thấy hồ sơ người dùng trong hệ thống.
+👁️ Observation: LỖI: Không tìm thấy hồ sơ người dùng 'Atlantis_user' trong hệ thống.
 
 --- 🔄 Vòng lặp ReAct (Step 2/5) ---
 🧠 Thought: Hồ sơ không tồn tại. Thử tìm kiếm đối tượng theo thành phố và mục tiêu được cung cấp.
