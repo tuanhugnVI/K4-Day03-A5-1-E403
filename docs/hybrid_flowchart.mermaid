@@ -1,0 +1,31 @@
+```mermaid
+graph TD
+    A["👤 User Input Query (Câu hỏi người dùng)"] --> B{"🧠 Phân loại Yêu cầu (Intent Detection)"}
+    
+    %% Đường 1: Chatbot Path (Câu hỏi đơn giản)
+    B -- "🟢 Câu hỏi đơn giản (Khái niệm, Lời khuyên chung)" --> C["💬 Chatbot Baseline Path"]
+    C --> D["🤖 Sinh phản hồi trực tiếp từ LLM"]
+    D --> E["🏁 Tra cứu trực tiếp (No Tool Needed)"]
+    
+    %% Đường 2: ReAct Agent Path (Câu hỏi phức tạp)
+    B -- "🟡/🔴 Câu hỏi phức tạp (Tra cứu DB, Phân tích, So sánh)" --> F["🧠 ReAct Agent Path"]
+    F --> G["🔄 Vòng lặp Suy luận (Thought -> Action)"]
+    G --> H{"🛠️ Gọi Công Cụ (Execute Tools)"}
+    
+    H -- "get_user_profile" --> I1["📋 Tra cứu hồ sơ cá nhân"]
+    H -- "search_partner" --> I2["🔎 Tìm kiếm đối tượng phù hợp"]
+    H -- "calculate_compatibility" --> I3["📊 Tính điểm tương thích đa tiêu chí"]
+    
+    I1 --> J["👁️ Observation (Dữ liệu thực từ DB)"]
+    I2 --> J
+    I3 --> J
+    
+    J --> K{"❓ Đã đủ thông tin chưa?"}
+    K -- "Chưa đủ (Cần thêm thông tin)" --> G
+    K -- "Đã đủ thông tin" --> L["🏁 Final Answer (Trả lời kèm chứng cứ thực tế)"]
+    
+    %% Đường Phanh An Toàn Guardrails
+    H -- "Lỗi Tool / Tham số bất hợp lệ" --> M["🛡️ Guardrail Safe Fallback"]
+    M --> N["🚨 Dừng lặp & Trả lời từ chối an toàn"]
+    K -- "Vượt quá MAX_ITERATIONS (>= 5)" --> O["🛑 Ngắt vòng lặp vô tận"]
+```
