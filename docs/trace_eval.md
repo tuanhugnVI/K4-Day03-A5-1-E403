@@ -34,6 +34,24 @@
 | **Cá nhân hóa lời khuyên** | ⚠️ Lời khuyên chung chung | ✅ Dựa trên dữ liệu thật từ profile & score |
 | **Xử lý edge case (thiếu thông tin)** | ❌ Vẫn bịa câu trả lời | ✅ Nhận diện lỗi → yêu cầu bổ sung |
 
+### 1.4. Danh sách các công cụ trong `src/tools.py` (Dành cho Role 2)
+
+| Tên Công Cụ (Tool Name) | Mô Tả Chức Năng | Đầu Vào (Arguments) | Đầu Ra (Returns) |
+| :--- | :--- | :--- | :--- |
+| 🛠️ `get_user_profile` | Tra cứu hồ sơ cá nhân chi tiết của người dùng theo tên | `username: str` | Thông tin tuổi, giới tính, cung hoàng đạo, vị trí, sở thích, lối sống, mục tiêu |
+| 🛠️ `search_partner` | Tìm kiếm đối tượng phù hợp từ cơ sở dữ liệu theo địa điểm & mục tiêu | `location: str`, `goal: str` | Danh sách ứng viên phù hợp hoặc thông báo không tìm thấy |
+| 🛠️ `calculate_compatibility` | Tính toán điểm tương thích đa tiêu chí giữa 2 người dùng | `user1: str`, `user2: str` | Điểm số tương thích (0-100) và chi tiết phân tích từng tiêu chí |
+
+### 1.5. Các trường hợp Tool bị lỗi — Failure Modes & Guardrails (Dành cho Role 3)
+
+| Mã Lỗi (Failure Mode) | Nguyên Nhân Lỗi | Biểu Hiện (Tool Response) | Xử Lý Phanh An Toàn (Guardrail Action) |
+| :--- | :--- | :--- | :--- |
+| **FM-01: Invalid User** | Người dùng không tồn tại trong DB | `LỖI: Không tìm thấy hồ sơ người dùng trong hệ thống.` | Agent nhận diện lỗi từ Observation, dừng tra cứu và thông báo cho người dùng. |
+| **FM-02: Invalid Location** | Nhập thành phố hư cấu (ví dụ: *Atlantis*) | `LỖI: Địa điểm 'Atlantis' không hợp lệ trong hệ thống.` | Agent không bịa kết quả, chuyển sang Safe Fallback báo địa điểm không hợp lệ. |
+| **FM-03: Invalid Parameter** | Tham số tuổi âm (-5) hoặc cung vô lý (*Alien*) | `LỖI: Tham số đầu vào không đúng định dạng.` | Agent phát hiện thông tin vô lý từ Thought/Observation và yêu cầu sửa thông tin. |
+| **FM-04: Unsafe Content** | Mục tiêu vi phạm quy chuẩn an toàn (*hack NASA*) | `LỖI: Mục tiêu không hợp lệ trong hệ thống.` | Tool từ chối thực thi, Agent ngắt luồng suy luận an toàn tại Step 3/5. |
+| **FM-05: Infinite Loop** | Agent lặp lại việc gọi tool khi không tìm thấy ứng viên | Lặp quá giới hạn cho phép | **`MAX_ITERATIONS = 5`** chủ động ngắt lặp an toàn, tránh treo ứng dụng. |
+
 ---
 
 ## 🔍 2. SO SÁNH PHẢN HỒI (TEST CASE #3)
